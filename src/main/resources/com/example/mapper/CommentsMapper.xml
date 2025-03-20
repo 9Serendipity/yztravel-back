@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.mapper.CommentsMapper">
+    <select id="getCommentsByAttractionId" resultType="com.example.tables.Comments">
+        SELECT * FROM comments 
+        WHERE attractionId = #{attractionId} 
+        ORDER BY createTime DESC
+    </select>
+
+    <insert id="addComment" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO comments (attractionId, userId, username, content, rating, createTime)
+        VALUES (#{attractionId}, #{userId}, #{username}, #{content}, #{rating}, NOW())
+    </insert>
+</mapper>

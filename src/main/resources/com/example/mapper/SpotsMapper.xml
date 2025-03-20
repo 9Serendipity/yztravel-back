@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.mapper.SpotsMapper">
+    <!-- 定义结果映射 -->
+    <resultMap id="SpotWithImages" type="com.example.tables.Spots">
+        <id property="attractionId" column="attractionId"/>
+        <result property="attractionName" column="attractionName"/>
+        <result property="attractionDescription" column="attractionDescription"/>
+        <result property="attractionLocal" column="attractionLocal"/>
+        <result property="attractionPrice" column="attractionPrice"/>
+        <result property="label" column="label"/>
+        <result property="classify" column="classify"/>
+        <result property="travelTime" column="travelTime"/>
+        <collection property="imageUrls" ofType="string">
+            <result column="image_url"/>
+        </collection>
+    </resultMap>
+
+    <!-- 根据ID查询景点及其图片 -->
+    <select id="selectById" resultMap="SpotWithImages">
+        SELECT s.*, i.image_url 
+        FROM spots s
+        LEFT JOIN attraction_images i ON s.attractionId = i.attraction_id
+        WHERE s.attractionId = #{spotId}
+    </select>
+</mapper>
