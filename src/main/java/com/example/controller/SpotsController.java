@@ -14,10 +14,9 @@ import com.example.tables.Spots;
 @RestController
 @RequestMapping("/spots")
 public class SpotsController {
-    
     @Autowired
     private SpotsService spotsService;
-
+    
     @PostMapping("/recommend")
     public Result getRecommendations(@RequestBody Map<String, Object> request) {
         Integer usersId = (Integer) request.get("usersId");
@@ -57,5 +56,25 @@ public class SpotsController {
         }
         
         return result;
+    }
+
+    @GetMapping("/attractions/name/{name}")
+    public Result getSpotByName(@PathVariable String name) {
+        Result result = spotsService.getSpotByName(name);
+        
+        // 添加日志
+        System.out.println("根据名称获取景点数据：" + name);
+        if (result.getData() != null) {
+            System.out.println("找到景点数据");
+        } else {
+            System.out.println("未找到景点");
+        }
+        
+        return result;
+    }
+
+    @GetMapping("/all")
+    public Result getAllSpotsWithStats() {
+        return spotsService.getAllSpotsWithStats();
     }
 }

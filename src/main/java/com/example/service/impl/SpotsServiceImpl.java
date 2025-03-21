@@ -1,8 +1,10 @@
 package com.example.service.impl;
 
 import com.example.common.Result;
+import com.example.mapper.AttractionStatesMapper;
 import com.example.mapper.SpotsMapper;
 import com.example.service.SpotsService;
+import com.example.tables.AttractionStates;
 import com.example.tables.Spots;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,6 +17,9 @@ public class SpotsServiceImpl implements SpotsService {
     
     @Autowired
     private SpotsMapper spotsMapper;
+    
+    @Autowired
+    private AttractionStatesMapper statesMapper;
 
     @Override
     public Result getRecommendations(Integer usersId, List<String> types, 
@@ -131,4 +136,86 @@ public class SpotsServiceImpl implements SpotsService {
             
             return Result.success(spot);
         }
+
+    @Override
+    public Result getSpotByName(String name) {
+        if (name == null || name.trim().isEmpty()) {
+            return Result.error("景点名称不能为空");
+        }
+        
+        Spots spot = spotsMapper.selectByName(name);
+        if (spot == null) {
+            return Result.error("未找到该景点");
+        }
+        
+        // 获取景点统计数据
+        AttractionStates states = statesMapper.getStatesBySpotId(spot.getAttractionId());
+        
+        // 添加调试日志
+        System.out.println("\n景点统计数据：");
+        if (states != null) {
+            System.out.println("景点ID: " + states.getAttractionId());
+            System.out.println("访问次数: " + states.getVisitCount());
+            System.out.println("总评分: " + states.getTotalRating());
+            System.out.println("评分次数: " + states.getRatingCount());
+            System.out.println("平均评分: " + states.getAvgRating());
+            System.out.println("关联景点ID: " + states.getSpotsId());
+        } else {
+            System.out.println("未找到该景点的统计数据");
+        }
+        
+        // 构造返回数据
+        Map<String, Object> spotData = new HashMap<>();
+        spotData.put("id", spot.getAttractionId());    // 添加景点ID
+        spotData.put("name", spot.getAttractionName());
+        spotData.put("rating", states != null ? states.getAvgRating() : 0.0);
+        spotData.put("visitCount", states != null ? states.getVisitCount() : 0);
+        
+        List<Map<String, Object>> dataList = Collections.singletonList(spotData);
+        
+        Result result = Result.success(dataList);
+        result.setMsg("success");
+        return result;
+    }
+
+    @Override
+    public Result getAllSpotsWithStats() {
+        // 获取所有景点
+        List<Spots> allSpots = spotsMapper.selectAll();
+        if (allSpots == null || allSpots.isEmpty()) {
+            return Result.error("暂无景点数据");
+        }
+    
+        // 转换数据格式
+        List<Map<String, Object>> spotsWithStats = allSpots.stream()
+            .map(spot -> {
+                Map<String, Object> spotData = new HashMap<>();
+                spotData.put("id", spot.getAttractionId());    // 添加景点ID
+                spotData.put("name", spot.getAttractionName());
+                
+                // 获取统计数据
+                AttractionStates states = statesMapper.getStatesBySpotId(spot.getAttractionId());
+                
+                // 添加调试日志
+                System.out.println("\n处理景点: " + spot.getAttractionName());
+                System.out.println("景点ID: " + spot.getAttractionId());
+                if (states != null) {
+                    System.out.println("访问次数: " + states.getVisitCount());
+                    System.out.println("平均评分: " + states.getAvgRating());
+                } else {
+                    System.out.println("未找到统计数据");
+                }
+                
+                // 设置统计数据
+                spotData.put("rating", states != null ? states.getAvgRating() : 0.0);
+                spotData.put("visitCount", states != null ? states.getVisitCount() : 0);
+                
+                return spotData;
+            })
+            .collect(Collectors.toList());
+    
+        Result result = Result.success(spotsWithStats);
+        result.setMsg("success");
+        return result;
+    }
 }

@@ -9,4 +9,9 @@ public interface SpotsService {
                             Integer duration, Map<String, Double> budget);
 
     Result getSpotById(Integer spotId);
+    
+    // 添加根据名称获取景点的方法
+    Result getSpotByName(String name);
+
+    Result getAllSpotsWithStats();
 }

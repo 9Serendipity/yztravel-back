@@ -14,4 +14,7 @@ public interface SpotsMapper {
 
     Spots selectById(Integer spotId);
     
+    // 添加根据名称查询的方法
+    @Select("SELECT * FROM spots WHERE attractionName = #{name}")
+    Spots selectByName(String name);
 }
